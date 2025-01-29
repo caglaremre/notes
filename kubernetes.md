@@ -2,6 +2,10 @@
 
 ## metada
 - custom data for the definition file
+<table border=1>
+<tr>
+<td>
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -10,12 +14,19 @@ metadata:
   labels:
     name: webapp-color
 ```
+</td>
+</tr>
+</table>
 
 ## commands and arguments
 - can pass args to pod with __spec.containers.args__ in the pod definition file
   - it is a __string list__
 - can override entrypoint with __spec.container.command__ in the pod definition file
   - it is a __string list__
+<table border=1>
+<tr>
+<td>
+
 ```yaml
 spec:
   containers:
@@ -26,6 +37,9 @@ spec:
       args:
         - "1200"
 ```
+</td>
+</tr>
+</table>
 
 ## environment variables
 - can pass env variables to pod with __spec.containers.env__ in the pod definition file
@@ -36,6 +50,7 @@ spec:
 <table border=1>
 <tr>
 <td>
+
 
 ```yaml
 spec:
@@ -64,6 +79,7 @@ spec:
 </td>
 </tr>
 </table>
+
 ## configmap
 - config maps are used to pass configuration data in the form of key value pairs in kubernetes
 - create configmap then inject it to the pod
@@ -73,6 +89,10 @@ kubectl create configmap \
   app-config --from-literal=APP_COLOR=blue \
   --from-literal=APP_MODE=test
 ```
+<table border=1>
+<tr>
+<td>
+
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -82,7 +102,15 @@ data:
   APP_COLOR: blue
   APP_MODE: test
 ```
+</td>
+</tr>
+</table>
+
 - can inject configmap via __spec.containers.envFrom__ with __configMapRef__
+<table border=1>
+<tr>
+<td>
+
 ```yaml
 spec:
   containers:
@@ -92,3 +120,6 @@ spec:
        - configMapRef:
            name: app-config
 ```
+</td>
+</tr>
+</table>
