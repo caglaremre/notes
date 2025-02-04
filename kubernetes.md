@@ -123,3 +123,52 @@ spec:
 </td>
 </tr>
 </table>
+
+## secrets
+- used to store sensetive information
+- stored in encoded format
+- imperative way
+
+`kubectl create secret generic <secret-name> --from-literal=<key>=<value>`
+
+`kubectl create secret generic app-secret --from-file=app_secret.properties`
+
+- use base64 encoded secrets
+- declarative way
+
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+data:
+  DB_Host: mysql
+  #DB_HOST: bXlzcWw=
+  DB_User: root
+  DB_Password: password
+```
+</td>
+</tr>
+</table>
+
+- can inject configmap via __spec.containers.envFrom__ with __secretRef__
+<table border=1>
+<tr>
+<td>
+
+```yaml
+spec:
+  containers:
+   - name: ubuntu
+     image: ubuntu
+     envFrom:
+       - secretRef:
+           name: app-secret
+```
+</td>
+</tr>
+</table>
