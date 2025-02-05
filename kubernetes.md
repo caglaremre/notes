@@ -19,10 +19,10 @@ metadata:
 </table>
 
 ## commands and arguments
-- can pass args to pod with __spec.containers.args__ in the pod definition file
-  - it is a __string list__
-- can override entrypoint with __spec.container.command__ in the pod definition file
-  - it is a __string list__
+- can pass args to pod with **spec.containers.args** in the pod definition file
+  - it is a **string list**
+- can override entrypoint with **spec.container.command** in the pod definition file
+  - it is a **string list**
 <table border=1>
 <tr>
 <td>
@@ -42,11 +42,11 @@ spec:
 </table>
 
 ## environment variables
-- can pass env variables to pod with __spec.containers.env__ in the pod definition file
-  - every variable should have a __name__ and __value__
-  - it is a __string list__
-- can pass values from configmap via __valueFrom__ with __configMapKey__
-- can pass values from configmap via __valueFrom__ with __secretKeyRef__
+- can pass env variables to pod with **spec.containers.env** in the pod definition file
+  - every variable should have a **name** and **value**
+  - it is a **string list**
+- can pass values from configmap via **valueFrom** with **configMapKey**
+- can pass values from configmap via **valueFrom** with **secretKeyRef**
 <table border=1>
 <tr>
 <td>
@@ -83,9 +83,9 @@ spec:
 ## configmap
 - config maps are used to pass configuration data in the form of key value pairs in kubernetes
 - create configmap then inject it to the pod
-- in the yaml it __doesn't__ have __spec__, insted have __data__
+- in the yaml it **doesn't** have **spec**, insted have **data**
 ```bash
-kubectl create configmap \
+emre@home ~ → kubectl create configmap \
   app-config --from-literal=APP_COLOR=blue \
   --from-literal=APP_MODE=test
 ```
@@ -106,7 +106,7 @@ data:
 </tr>
 </table>
 
-- can inject configmap via __spec.containers.envFrom__ with __configMapRef__
+- can inject configmap via **spec.containers.envFrom** with **configMapRef**
 <table border=1>
 <tr>
 <td>
@@ -129,9 +129,9 @@ spec:
 - stored in encoded format
 - imperative way
 
-`kubectl create secret generic <secret-name> --from-literal=<key>=<value>`
+`emre@home ~ → kubectl create secret generic <secret-name> --from-literal=<key>=<value>`
 
-`kubectl create secret generic app-secret --from-file=app_secret.properties`
+`emre@home ~ → kubectl create secret generic app-secret --from-file=app_secret.properties`
 
 - use base64 encoded secrets
 - declarative way
@@ -155,7 +155,7 @@ data:
 </tr>
 </table>
 
-- can inject configmap via __spec.containers.envFrom__ with __secretRef__
+- can inject configmap via **spec.containers.envFrom** with **secretRef**
 <table border=1>
 <tr>
 <td>
@@ -204,3 +204,36 @@ spec:
 </td>
 </tr>
 </table>
+
+## cluster maintenance
+- default is 5 minute for pod eviction timeout
+- drain nodes for os updates
+  - `emre@home ~ → kubectl drain node-1`
+- drained nodes becames unschedulable until uncordon
+  - `emre@home ~ → kubectl uncordon node-1`
+- make nodes unschedulable witouth terminating existing nodes
+  - `emre@home ~ → kubectl cordon node-2`
+- if there is app on node that isn't part any replicaset the node cannot be drained
+
+## cluster upgrade
+- none of the components' version can higher than `kube-apiserver`
+- controller-manager and `kube-scheduler` can be **one** version lower than `kube-apiserver`
+- `kubelet` and `kube-proxy` can be **two** version lower than `kube-apiserver`
+- `kubectl` can be **one** higher or **one** lower than `kube-apiserver`
+- kubernetes support only support recent **three** minor version
+- recommended path is update minor versions one at a time without skipping
+
+### kubeadm - upgrade
+  - for minor version upgrades edit package manager's kubernetes version
+    - for example: for ubuntu edit `/etc/apt/sources.list.d/kubernetes.list` and replace desired version
+    - before upgrading the kubeadm list versions and select the patch version for installation for `kubeadm` and `kubelet`
+  - only `drain` the node will be upgraded then upgrade `kubelet` and `kubeadm` with the package manager
+  - `emre@home ~ → kubeadm upgrade plan <version>`
+  - upgrade the `kubeadm` command first with package manager
+  - `emre@home ~ → kubeadm upgrade apply <version>`
+  - upgrade the `kubelet` command first with package manager and restart the `kubelet` service
+  - update the node configuration for the new `kubelet` version
+    - `emre@home ~ →  kubeadm upgrade node #config --kubelet-version <version>`
+  - restart the `kubelet` service
+  - `uncordon` the node when the upgrade is completed
+  - repeat for all the nodes
