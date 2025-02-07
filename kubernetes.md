@@ -237,3 +237,32 @@ spec:
   - restart the `kubelet` service
   - `uncordon` the node when the upgrade is completed
   - repeat for all the nodes
+
+## etcd
+- `etcdctl` is the client for interacting with **etcd**
+- before using `etcdctl` export api version the environment variable
+  - `emre@home ~ → export ETCDCTL_API=3`
+- for TLS enabled etcd database `--cacert=`, `--cert=`, `--endpoints=<host>:<port>`, `--key=` are **MANDATORY**
+- check the cluster members with `emre@home ~ → etcdctl member list`
+
+## backup & restore
+- resource configuration
+  - store in the source code repository
+  - query to **kube-apiserver** with `kubectl` and save the output
+    - `emre@home ~ → kubectl get all --all-namespaces -o yaml > all-deploy-services.yaml`
+- etcd cluster
+  - stores information about state of the cluster itself
+  - --data-dir directory can be backup
+  - backup a snapshot of etcd with `etcdctl`
+    - `emre@home ~ → ETCDCTL_API=3 etcdctl snapshot save snapshot.db`
+    - `emre@home ~ → ETCDCTL_API=3 etcdctl snapshot status snapshot.db`
+    - for restoring the snapshot
+      1. stop the **kube-apiserver** service with `emre@home ~ → service kube-apiserver stop`
+      2. `emre@home ~ → ETCDCTL_API=3 etcdctl snapshot restore snapshot.db --data-dir /var/lib/etcd-from-backup`
+      3. new data directory should be updated on **etcd.service** as well
+      4. reload the **daemon** with `emre@home ~ → systemctl deamon-reload` to read the updated configuration
+      5. then restart the **etcd** service with `emre@home ~ → systemctl etcd restart`
+      6. lastly start the **kube-apiserver** service with `emre@home ~ → service kube-apiserver start`
+  - for the all **etcdctl** commands you need to specify endpoint, cacert, cert, key files
+    - `emre@home ~ → ETCDCTL_API=3 etcdctl --endpoint=https://127.0.0.1:2379 --cacert=/etc/etcd/ca.crt --cert=/etc/etcd/etcd-server.crt --key=/etc/etcd/etcd-server.key`
+- persistent volumes
