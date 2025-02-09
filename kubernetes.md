@@ -266,3 +266,28 @@ spec:
   - for the all **etcdctl** commands you need to specify endpoint, cacert, cert, key files
     - `emre@home ~ → ETCDCTL_API=3 etcdctl --endpoint=https://127.0.0.1:2379 --cacert=/etc/etcd/ca.crt --cert=/etc/etcd/etcd-server.crt --key=/etc/etcd/etcd-server.key`
 - persistent volumes
+
+## security
+### secure hosts
+- password based authentication disabled
+- ssh key based authentication
+- root access disabled
+- other related infra security and hardening
+
+### authentication
+- kubertetes not manage user accounts
+- can create service accounts
+- all user access managed by kube-apiserver
+- auth mechanisims
+  1. static password files
+    - from csv file with password, username, userid, optionally groupid
+    - need to add `--basic-auth-file=<filename>` to kube-apiserver server configuration
+    - specify user and password when running commands with curl
+    - **not recommended and deprecated**
+  2. static token files
+    - from csv file with token, username, userid, optionally groupid
+    - need to add `--token-auth-file=<filename>` to kube-apiserver server configuration
+    - specify the token with `Authentication: Bearer <token>` in header
+    - **not recommended and deprecated**
+  3. certificates
+  4. identity services
