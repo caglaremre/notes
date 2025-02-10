@@ -291,3 +291,20 @@ spec:
     - **not recommended and deprecated**
   3. certificates
   4. identity services
+
+## tls in kubernetes
+
+### kubernetes server components
+- each components have their own pair certificates
+- kube-apiserver
+- etcd
+- kubelet
+
+### kubernetes client components
+- each components have their own pair certificates
+- admin (kubectl, kubeadm)
+- kube-scheduler
+- kube-controller-manager
+- kube-proxy
+- kube-apiserver to talk to etcd
+- kube-apiserver to talk to kubelet
