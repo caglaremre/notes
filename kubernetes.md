@@ -308,3 +308,123 @@ spec:
 - kube-proxy
 - kube-apiserver to talk to etcd
 - kube-apiserver to talk to kubelet
+
+## api groups
+ /metrics /healthz /version /api /apis /logs
+- core and named two categories
+- core group is where all core func exists
+- grouped based on purpose
+
+
+## authorization mechanisms
+- authorization mode selected with kube-apiserver's starting args.
+- `--authorization-mode=<mode>` is used for selecting the one of the mode below
+- if nothins selected **AlwaysAllow** is the default
+- can accept multiple with comma seperated list
+- node
+  - access within the cluster
+- abac (attribute based access controls)
+  - difficult to manage because of you need manually change every file and restart kube-apiserver
+  - `{"kind": "Policy", "spec": {"user": "dev-user", "namespace": "*", "resource": "pods", "apiGroup": "*"}}`
+- rbac (role based access controls)
+  - insted of user or group we define role and assosiate with users
+- webhook
+  - manage the authorization with 3rd party tool
+  - exp: open policy agent
+- AlwaysAllow and AlwaysDeny two extras
+
+### rbac
+- create a role object
+- for core group `apiGroups` is empty
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: developer
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["list", "get", "create", "update", "delete"]
+```
+</td>
+</tr>
+</table>
+
+- create the role with `kubectl create -f <filename>.yaml`
+- link the user with the role using role binding
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metada:
+  name: devuser-developer-binding
+subjects:
+  - kind: User
+    name: dev-user
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: developer
+  apiGroup: rbac.authorization.k8s.io
+```
+</td>
+</tr>
+</table>
+
+- create the role bindings with `kubectl create -f <filename>.yaml`
+- to get roles, run `kubectl get role`
+- to get role bindings, run `kubectl get rolebindings`
+- use `decribe` command to get details
+- to check access, run `kubectl auth can-i <the command you want to check>`
+- to impersonate to another user `kubectl auth can-i <command to check> --as <user to impersonate>`
+- you can add `--namespace` to impersonating the user
+- you can add `resourceNames` to the role object to give permission only for specific pods
+
+### cluster roles
+- cluster roles are system wide and not namespace
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+name: cluster-administrator
+rules:
+  - apiGroups: [""]
+    resources: [“nodes"]
+    verbs: ["list“, "get", “create“, “delete"]
+```
+</td>
+</tr>
+</table>
+
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+name: cluster-admin-role-binding
+subjects:
+  - kind: User
+    name: cluster-admin
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: cluster-administrator
+  apiGroup: rbac.authorization.k8s.io
+```
+</td>
+</tr>
+</table>
