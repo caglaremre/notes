@@ -442,7 +442,7 @@ roleRef:
 - to get service accounts, run `kubectl get serviceaccount`
 - cannot edit running pods service accounts
 - you can edit deployment's service accounts
-- to create a non-expiring, persisted token for a service account
+- to create a token associated with a secret object:
 <table border=1>
 <tr>
 <td>
@@ -459,4 +459,3 @@ metadata:
 </td>
 </tr>
 </table>
-
