@@ -428,3 +428,35 @@ roleRef:
 </td>
 </tr>
 </table>
+
+## service accounts
+- service accounts used by machines
+- when service account created, a **token** generated automatically
+- token is stored in **secrets**
+- a default service account always mounted pods
+- default service account limited to basic queries to kube-apiserver
+- default service account mounted at **/var/run/secrets/kubernetes.io/serviceaccount** folder
+- default account mount can be disabled via `automountServiceAccountToken: false` in definition file
+- to create service account, run `kubectl create serviceaccount <account name>`
+- to create token for service account, run `kubectl create token <account name>`
+- to get service accounts, run `kubectl get serviceaccount`
+- cannot edit running pods service accounts
+- you can edit deployment's service accounts
+- to create a non-expiring, persisted token for a service account
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: mysecretname
+  annotations:
+    kubernetes.io/service-account.name: myserviceaccount
+```
+</td>
+</tr>
+</table>
+
