@@ -459,3 +459,30 @@ metadata:
 </td>
 </tr>
 </table>
+
+## image security
+- to login private registery we create a secret with docker-registry
+
+`kubectl create secret docker-registry regcred --docker-server= --docker-username --docker-password --docker-email`
+- after creating this we specify this secret in the pod definition file
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+  - name: nginx
+    image: private-registry.io/apps/internap-app-name
+  imagePullSecrets:
+  - name: regrecd
+```
+</td>
+</tr>
+</table>
+
+##
