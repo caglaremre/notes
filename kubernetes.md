@@ -485,4 +485,146 @@ spec:
 </tr>
 </table>
 
-##
+## security context
+- to run containers with specific user
+<table border=1>
+<tr>
+<td>
+
+``` yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+spec:
+  securityContext:
+   runAsUser: 1000
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    command: ["sleep", "3600"]
+```
+</td>
+</tr>
+</table>
+
+- capabilities are only supported at the container level
+<table border=1>
+<tr>
+<td>
+
+``` yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web-pod
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    command: ["sleep", "3600"]
+    securityContext:
+      runAsUser: 1000
+      capabilities:
+        add: ["MAC_ADMIN"]
+```
+</td>
+</tr>
+</table>
+
+## network
+### network policy
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          name: api-pod
+      namespaceSelector:
+        matchLabels:
+          name: prod
+    ports:
+    - protocol: TCP
+      port: 3306
+```
+</td>
+</tr>
+</table>
+
+- from outside of the cluster
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 192.168.5.10/32
+    ports:
+    - protocol: TCP
+      port: 3306
+```
+</td>
+</tr>
+</table>
+
+- to outside of the cluster
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-policy
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 192.168.5.10/32
+    ports:
+    - protocol: TCP
+      port: 3306
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 192.168.5.10/32
+    ports:
+    - protocol: TCP
+      port: 80
+```
+</td>
+</tr>
+</table>
