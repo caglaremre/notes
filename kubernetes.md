@@ -628,3 +628,71 @@ spec:
 </td>
 </tr>
 </table>
+
+## certificates api
+- creating csr object
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: Jane
+spec:
+  expirationSeconds: 600
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+  request:
+    - <base64 csr>
+```
+</td>
+</tr>
+</table>
+
+- `kubectl get csr` to get requests
+- `kubectl certificate approve <name>` to sign the request
+- the signed certificate will be in csr object
+- `kubectl get csr -o yaml` to see signed base64 certificate
+- controller manager is doign the signing
+
+## kube config
+- the default config file is $HOME/.kube/config
+- clusters, users, context(which user used to access to which cluster)
+- uses the existing users
+- `kubectl config view` to view config file in use
+- `kubectl config use-context <context>` to change context
+- use `certificate-authority-data` instead `certificate-authority` for directly adding base64 data to config file
+- use `KUBECONFIG` environment variable to export custom config file
+- example:
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: v1
+kind: Config
+current-context: my-kube-admin@my-kube-playground
+clusters:
+  - name:  my-kube-playground
+    cluster:
+      certificate-authority: ca.crt
+      server: https://my-kube-playground:6443
+context:
+  - name: my-kube-admin@my-kube-playground
+    context:
+      cluster: my-kube-playground
+      user: my-kube-admin
+      namespace: finance
+users:
+  - name: my-kube-admin
+    user:
+      client-certificate: admin.crt
+      client-key: admin.key
+```
+</td>
+</tr>
+</table>
