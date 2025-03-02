@@ -1,12 +1,11 @@
 # docker
 
-# environment variables
+## environment variables
 - add environment variables to run command with `-e` argument.
-```bash
-docker run -e APP_COLOR=green simple-webapp-color
-```
 
-# dockerfile entrypoint and cmd
+`docker run -e APP_COLOR=green simple-webapp-color`
+
+## dockerfile entrypoint and cmd
 - entrypoint is used when you want to pass additional arguments
 ```dockerfile
 ENTRYPOINT ["sleep"]
