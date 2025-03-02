@@ -1,5 +1,8 @@
 # kubernetes
 
+## tips
+- executing a command inside pod `kubectl exec webapp -- cat /log/app.log`
+
 ## metada
 - custom data for the definition file
 <table border=1>
@@ -692,6 +695,134 @@ users:
     user:
       client-certificate: admin.crt
       client-key: admin.key
+```
+</td>
+</tr>
+</table>
+
+## volumes
+- directory to directory mapping
+- to create and mount a volume on host to pod
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: random-number-generator
+spec:
+  containers:
+  - image: alpine
+    name: alpine
+    volumeMounts:
+    - mountPath: /opt
+      name: data-volume
+  volumes:
+  - name: data-volume
+    hostPath:
+      path: /data
+      type: Directory
+```
+</td>
+</tr>
+</table>
+
+- do not use the host without a nfs. data will not persist bettween nodes.
+
+## persistent volumes
+- to create persitent volumes
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-vol1
+spec:
+  accessModes: # defines how a volume should be mounted on host
+  - ReadWriteOnce
+  capacity:
+    storage: 1Gi
+  hostPath: # defines volume type do not use this on production replace this with storage solutions
+    path: /tmp/data
+```
+</td>
+</tr>
+</table>
+
+- persistent volumes one-to-one with persistent volume claims
+- unclaimed storage will not be used by other claims
+- to use persistent volume, create persistent volume claim
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: v1
+kind: PersistenctVolumeClaim
+metadata:
+  name: myclaim
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 505Mi
+```
+</td>
+</tr>
+</table>
+
+- to add pvc to any pod, deployment or replica sets add below to under volumes
+<table border=1>
+<tr>
+<td>
+
+```yaml
+spec:
+  volumes:
+  - name: mypd
+    persistentVolumeClaim:
+      claimName: myclaim
+```
+</td>
+</tr>
+</table>
+
+- when pvc deleted, volume will be not deleted and will not claimed by other pvc by default
+- if you want to delete pv with pvc, use `persistentVolumeReclaimPolicy: Delete` when creating pv
+- if you want to recycle pv for new pvc, use `persistentVolumeReclaimPolicy: Recycle` when creating pv
+
+## storage class
+- with storage class you provision dynamicly with cloud vendors
+<table border=1>
+<tr>
+<td>
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: google-storage
+provisioner: kubernetes.io/gce-pd
+```
+</td>
+</tr>
+</table>
+
+- with storage class we don't need to create persistent volume anymore.
+- to use storage class, add it to pvc definition
+<table border=1>
+<tr>
+<td>
+
+```yaml
+spec:
+  storageClassName: google-storage
 ```
 </td>
 </tr>
