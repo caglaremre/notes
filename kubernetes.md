@@ -404,7 +404,8 @@ spec:
 
 ## security context
 - to run containers with specific user
-``` yaml
+
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -419,7 +420,8 @@ spec:
 ```
 
 - capabilities are only supported at the container level
-``` yaml
+
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
