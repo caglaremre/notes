@@ -19,62 +19,45 @@ metadata:
   - it is a **string list**
 - can override entrypoint with **spec.container.command** in the pod definition file
   - it is a **string list**
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 spec:
   containers:
-    - name: ubuntu
+  - name: ubuntu
       image: ubuntu
       command:
-        - "sleep"
+      - "sleep"
       args:
-        - "1200"
+      - "1200"
 ```
-</td>
-</tr>
-</table>
 
 ## environment variables
 - can pass env variables to pod with **spec.containers.env** in the pod definition file
   - every variable should have a **name** and **value**
   - it is a **string list**
+```yaml
+spec:
+  containers:
+  - name: ubuntu
+    image: ubuntu
+    env:
+    - name: "APP_COLOR"
+      value: "GREEN"
+```
+
 - can pass values from configmap via **valueFrom** with **configMapKey**
 - can pass values from configmap via **valueFrom** with **secretKeyRef**
-<table border=1>
-<tr>
-<td>
-
-
 ```yaml
 spec:
   containers:
-    - name: ubuntu
-      image: ubuntu
-      env:
-       - name: "APP_COLOR"
-         value: "GREEN"
+  - name: ubuntu
+    image: ubuntu
+    env:
+    - name: APP_COLOR
+      valueFrom:
+        configMapKeyRef:
+          name: webapp-config-map
+          key: APP_COLOR
 ```
-</td>
-<td>
-
-```yaml
-spec:
-  containers:
-    - name: ubuntu
-      image: ubuntu
-      env:
-        - name: APP_COLOR
-          valueFrom:
-            configMapKeyRef:
-              name: webapp-config-map
-              key: APP_COLOR
-```
-</td>
-</tr>
-</table>
 
 ## configmap
 - config maps are used to pass configuration data in the form of key value pairs in kubernetes
@@ -85,10 +68,6 @@ emre@home ~ → kubectl create configmap \
   app-config --from-literal=APP_COLOR=blue \
   --from-literal=APP_MODE=test
 ```
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -98,27 +77,17 @@ data:
   APP_COLOR: blue
   APP_MODE: test
 ```
-</td>
-</tr>
-</table>
 
 - can inject configmap via **spec.containers.envFrom** with **configMapRef**
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 spec:
   containers:
-   - name: ubuntu
-     image: ubuntu
-     envFrom:
-       - configMapRef:
-           name: app-config
+  - name: ubuntu
+    image: ubuntu
+    envFrom:
+    - configMapRef:
+        name: app-config
 ```
-</td>
-</tr>
-</table>
 
 ## secrets
 - used to store sensetive information
@@ -132,10 +101,6 @@ spec:
 - use base64 encoded secrets
 - declarative way
 
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -147,35 +112,21 @@ data:
   DB_User: root
   DB_Password: password
 ```
-</td>
-</tr>
-</table>
 
 - can inject configmap via **spec.containers.envFrom** with **secretRef**
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 spec:
   containers:
-   - name: ubuntu
-     image: ubuntu
-     envFrom:
-       - secretRef:
-           name: app-secret
+  - name: ubuntu
+    image: ubuntu
+    envFrom:
+    - secretRef:
+        name: app-secret
 ```
-</td>
-</tr>
-</table>
 
 ## init containers
 - when a pod is first created the initcontainer is run, and the process in the initcontainer must run to a completion before the real container hosting the application starts.
 - each init container is run one at a time in sequential order.
-
-<table border=1>
-<tr>
-<td>
 
 ```yaml
 apiVersion: v1
@@ -197,9 +148,6 @@ spec:
     image: busybox:1.28
     command: ['sh', '-c', 'until nslookup mydb; do echo waiting for mydb; sleep 2; done;']
 ```
-</td>
-</tr>
-</table>
 
 ## cluster maintenance
 - default is 5 minute for pod eviction timeout
@@ -332,47 +280,33 @@ spec:
 ### rbac
 - create a role object
 - for core group `apiGroups` is empty
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: developer
 rules:
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["list", "get", "create", "update", "delete"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list", "get", "create", "update", "delete"]
 ```
-</td>
-</tr>
-</table>
 
 - create the role with `kubectl create -f <filename>.yaml`
 - link the user with the role using role binding
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metada:
   name: devuser-developer-binding
 subjects:
-  - kind: User
-    name: dev-user
-    apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: dev-user
+  apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
   name: developer
   apiGroup: rbac.authorization.k8s.io
 ```
-</td>
-</tr>
-</table>
 
 - create the role bindings with `kubectl create -f <filename>.yaml`
 - to get roles, run `kubectl get role`
@@ -385,27 +319,16 @@ roleRef:
 
 ### cluster roles
 - cluster roles are system wide and not namespace
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
 name: cluster-administrator
 rules:
-  - apiGroups: [""]
-    resources: [“nodes"]
-    verbs: ["list“, "get", “create“, “delete"]
+- apiGroups: [""]
+  resources: [“nodes"]
+  verbs: ["list“, "get", “create“, “delete"]
 ```
-</td>
-</tr>
-</table>
-
-<table border=1>
-<tr>
-<td>
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -413,17 +336,14 @@ kind: ClusterRoleBinding
 metadata:
 name: cluster-admin-role-binding
 subjects:
-  - kind: User
-    name: cluster-admin
-    apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole
   name: cluster-administrator
   apiGroup: rbac.authorization.k8s.io
 ```
-</td>
-</tr>
-</table>
 
 ## service accounts
 - service accounts used by machines
@@ -439,10 +359,6 @@ roleRef:
 - cannot edit running pods service accounts
 - you can edit deployment's service accounts
 - to create a token associated with a secret object:
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -452,19 +368,12 @@ metadata:
   annotations:
     kubernetes.io/service-account.name: myserviceaccount
 ```
-</td>
-</tr>
-</table>
 
 ## image security
 - to login private registery we create a secret with docker-registry
 
 `kubectl create secret docker-registry regcred --docker-server= --docker-username --docker-password --docker-email`
 - after creating this we specify this secret in the pod definition file
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -477,16 +386,9 @@ spec:
   imagePullSecrets:
   - name: regrecd
 ```
-</td>
-</tr>
-</table>
 
 ## security context
 - to run containers with specific user
-<table border=1>
-<tr>
-<td>
-
 ``` yaml
 apiVersion: v1
 kind: Pod
@@ -500,15 +402,8 @@ spec:
     image: ubuntu
     command: ["sleep", "3600"]
 ```
-</td>
-</tr>
-</table>
 
 - capabilities are only supported at the container level
-<table border=1>
-<tr>
-<td>
-
 ``` yaml
 apiVersion: v1
 kind: Pod
@@ -524,16 +419,9 @@ spec:
       capabilities:
         add: ["MAC_ADMIN"]
 ```
-</td>
-</tr>
-</table>
 
 ## network
 ### network policy
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -557,15 +445,8 @@ spec:
     - protocol: TCP
       port: 3306
 ```
-</td>
-</tr>
-</table>
 
 - from outside of the cluster
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -585,15 +466,8 @@ spec:
     - protocol: TCP
       port: 3306
 ```
-</td>
-</tr>
-</table>
 
 - to outside of the cluster
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -621,16 +495,9 @@ spec:
     - protocol: TCP
       port: 80
 ```
-</td>
-</tr>
-</table>
 
 ## certificates api
 - creating csr object
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
@@ -639,15 +506,12 @@ metadata:
 spec:
   expirationSeconds: 600
   usages:
-    - digital signature
-    - key encipherment
-    - server auth
+  - digital signature
+  - key encipherment
+  - server auth
   request:
-    - <base64 csr>
+  - <base64 csr>
 ```
-</td>
-</tr>
-</table>
 
 - `kubectl get csr` to get requests
 - `kubectl certificate approve <name>` to sign the request
@@ -664,42 +528,31 @@ spec:
 - use `certificate-authority-data` instead `certificate-authority` for directly adding base64 data to config file
 - use `KUBECONFIG` environment variable to export custom config file
 - example:
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: v1
 kind: Config
 current-context: my-kube-admin@my-kube-playground
 clusters:
-  - name:  my-kube-playground
-    cluster:
-      certificate-authority: ca.crt
-      server: https://my-kube-playground:6443
+- name:  my-kube-playground
+  cluster:
+    certificate-authority: ca.crt
+    server: https://my-kube-playground:6443
 context:
-  - name: my-kube-admin@my-kube-playground
-    context:
-      cluster: my-kube-playground
-      user: my-kube-admin
-      namespace: finance
+- name: my-kube-admin@my-kube-playground
+  context:
+    cluster: my-kube-playground
+    user: my-kube-admin
+    namespace: finance
 users:
-  - name: my-kube-admin
-    user:
-      client-certificate: admin.crt
-      client-key: admin.key
+- name: my-kube-admin
+  user:
+    client-certificate: admin.crt
+    client-key: admin.key
 ```
-</td>
-</tr>
-</table>
 
 ## volumes
 - directory to directory mapping
 - to create and mount a volume on host to pod
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -718,18 +571,11 @@ spec:
       path: /data
       type: Directory
 ```
-</td>
-</tr>
-</table>
 
 - do not use the host without a nfs. data will not persist bettween nodes.
 
 ## persistent volumes
 - to create persitent volumes
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -743,17 +589,10 @@ spec:
   hostPath: # defines volume type do not use this on production replace this with storage solutions
     path: /tmp/data
 ```
-</td>
-</tr>
-</table>
 
 - persistent volumes one-to-one with persistent volume claims
 - unclaimed storage will not be used by other claims
 - to use persistent volume, create persistent volume claim
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: v1
 kind: PersistenctVolumeClaim
@@ -766,15 +605,8 @@ spec:
     requests:
       storage: 505Mi
 ```
-</td>
-</tr>
-</table>
 
 - to add pvc to any pod, deployment or replica sets add below to under volumes
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 spec:
   volumes:
@@ -782,9 +614,6 @@ spec:
     persistentVolumeClaim:
       claimName: myclaim
 ```
-</td>
-</tr>
-</table>
 
 - when pvc deleted, volume will be not deleted and will not claimed by other pvc by default
 - if you want to delete pv with pvc, use `persistentVolumeReclaimPolicy: Delete` when creating pv
@@ -792,10 +621,6 @@ spec:
 
 ## storage class
 - with storage class you provision dynamicly with cloud vendors
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -803,20 +628,10 @@ metadata:
   name: google-storage
 provisioner: kubernetes.io/gce-pd
 ```
-</td>
-</tr>
-</table>
 
 - with storage class we don't need to create persistent volume anymore.
 - to use storage class, add it to pvc definition
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 spec:
   storageClassName: google-storage
 ```
-</td>
-</tr>
-</table>
