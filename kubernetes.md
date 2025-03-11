@@ -19,6 +19,7 @@ metadata:
   - it is a **string list**
 - can override entrypoint with **spec.container.command** in the pod definition file
   - it is a **string list**
+
 ```yaml
 spec:
   containers:
