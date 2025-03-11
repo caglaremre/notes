@@ -5,6 +5,7 @@
 
 ## metada
 - custom data for the definition file
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -24,17 +25,18 @@ metadata:
 spec:
   containers:
   - name: ubuntu
-      image: ubuntu
-      command:
-      - "sleep"
-      args:
-      - "1200"
+    image: ubuntu
+    command:
+    - "sleep"
+    args:
+    - "1200"
 ```
 
 ## environment variables
 - can pass env variables to pod with **spec.containers.env** in the pod definition file
   - every variable should have a **name** and **value**
   - it is a **string list**
+
 ```yaml
 spec:
   containers:
@@ -47,6 +49,7 @@ spec:
 
 - can pass values from configmap via **valueFrom** with **configMapKey**
 - can pass values from configmap via **valueFrom** with **secretKeyRef**
+
 ```yaml
 spec:
   containers:
@@ -69,6 +72,7 @@ emre@home ~ → kubectl create configmap \
   app-config --from-literal=APP_COLOR=blue \
   --from-literal=APP_MODE=test
 ```
+
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -80,6 +84,7 @@ data:
 ```
 
 - can inject configmap via **spec.containers.envFrom** with **configMapRef**
+
 ```yaml
 spec:
   containers:
@@ -102,6 +107,7 @@ spec:
 - use base64 encoded secrets
 - declarative way
 
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -115,6 +121,7 @@ data:
 ```
 
 - can inject configmap via **spec.containers.envFrom** with **secretRef**
+
 ```yaml
 spec:
   containers:
@@ -128,6 +135,7 @@ spec:
 ## init containers
 - when a pod is first created the initcontainer is run, and the process in the initcontainer must run to a completion before the real container hosting the application starts.
 - each init container is run one at a time in sequential order.
+
 
 ```yaml
 apiVersion: v1
@@ -281,6 +289,7 @@ spec:
 ### rbac
 - create a role object
 - for core group `apiGroups` is empty
+
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -294,6 +303,7 @@ rules:
 
 - create the role with `kubectl create -f <filename>.yaml`
 - link the user with the role using role binding
+
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -320,6 +330,7 @@ roleRef:
 
 ### cluster roles
 - cluster roles are system wide and not namespace
+
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -330,6 +341,7 @@ rules:
   resources: [“nodes"]
   verbs: ["list“, "get", “create“, “delete"]
 ```
+
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -360,6 +372,7 @@ roleRef:
 - cannot edit running pods service accounts
 - you can edit deployment's service accounts
 - to create a token associated with a secret object:
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -375,6 +388,7 @@ metadata:
 
 `kubectl create secret docker-registry regcred --docker-server= --docker-username --docker-password --docker-email`
 - after creating this we specify this secret in the pod definition file
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -423,6 +437,7 @@ spec:
 
 ## network
 ### network policy
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -448,6 +463,7 @@ spec:
 ```
 
 - from outside of the cluster
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -469,6 +485,7 @@ spec:
 ```
 
 - to outside of the cluster
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -499,6 +516,7 @@ spec:
 
 ## certificates api
 - creating csr object
+
 ```yaml
 apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
@@ -529,6 +547,7 @@ spec:
 - use `certificate-authority-data` instead `certificate-authority` for directly adding base64 data to config file
 - use `KUBECONFIG` environment variable to export custom config file
 - example:
+
 ```yaml
 apiVersion: v1
 kind: Config
@@ -554,6 +573,7 @@ users:
 ## volumes
 - directory to directory mapping
 - to create and mount a volume on host to pod
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -577,6 +597,7 @@ spec:
 
 ## persistent volumes
 - to create persitent volumes
+
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -594,6 +615,7 @@ spec:
 - persistent volumes one-to-one with persistent volume claims
 - unclaimed storage will not be used by other claims
 - to use persistent volume, create persistent volume claim
+
 ```yaml
 apiVersion: v1
 kind: PersistenctVolumeClaim
@@ -608,6 +630,7 @@ spec:
 ```
 
 - to add pvc to any pod, deployment or replica sets add below to under volumes
+
 ```yaml
 spec:
   volumes:
@@ -622,6 +645,7 @@ spec:
 
 ## storage class
 - with storage class you provision dynamicly with cloud vendors
+
 ```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -632,6 +656,7 @@ provisioner: kubernetes.io/gce-pd
 
 - with storage class we don't need to create persistent volume anymore.
 - to use storage class, add it to pvc definition
+
 ```yaml
 spec:
   storageClassName: google-storage
