@@ -5,7 +5,7 @@
 - generate certificate signing request
   - `openssl req -new -key ca.key -shubj "/CN=kubernetes-ca" -out ca.csr`
 - sign certificate request
-  - `openssl x509 -req -in ca.csr -signkey ca.key -out ca.crt
+  - `openssl x509 -req -in ca.csr -signkey ca.key -out ca.crt`
 
 ## generating new certificate with self-sign root certificate
 - generate key

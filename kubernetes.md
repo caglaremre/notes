@@ -5,10 +5,6 @@
 
 ## metada
 - custom data for the definition file
-<table border=1>
-<tr>
-<td>
-
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -17,9 +13,6 @@ metadata:
   labels:
     name: webapp-color
 ```
-</td>
-</tr>
-</table>
 
 ## commands and arguments
 - can pass args to pod with **spec.containers.args** in the pod definition file
