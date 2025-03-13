@@ -1,2 +1,2 @@
-.inner { position: relative; max-width: 83% !important; padding: 20px 10px; margin: 0 auto; }
 @import "{{ site.theme }}";
+.inner { position: relative; max-width: 83% !important; padding: 20px 10px; margin: 0 auto; }
