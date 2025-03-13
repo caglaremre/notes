@@ -1,0 +1,2 @@
+@import "{{ site.theme }}";
+.inner { position: relative; max-width: 83%; padding: 20px 10px; margin: 0 auto; }
