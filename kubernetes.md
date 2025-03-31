@@ -369,7 +369,7 @@ roleRef:
 - to create service account, run `kubectl create serviceaccount <account name>`
 - to create token for service account, run `kubectl create token <account name>`
 - to get service accounts, run `kubectl get serviceaccount`
-- cannot edit running pods service accounts
+- cannot edit running pod's service accounts
 - you can edit deployment's service accounts
 - to create a token associated with a secret object:
 
@@ -663,3 +663,107 @@ provisioner: kubernetes.io/gce-pd
 spec:
   storageClassName: google-storage
 ```
+
+## network
+- networks managed by plugins
+- network plugins installed on `/opt/cni/bin`
+- which plugin and how to use it configurations stored in `/etc/cni/net.d`
+
+### cni plugin responsibilities
+- must support arguments add/del/check
+- must support parameters conainer id, network ns, etc...
+- must manage ip address assignment to pods
+- must return results in a specific format
+
+### service network
+- services is hosted across the cluster
+- `clusterip` is when you create a service accessible from all pods on the cluster
+- `nodeport` is when you need to expose application on node port to access from external
+
+### dns
+- whenever a service created, dns service creates a record for the service and map the service name to the ip address
+- all pod and services for a namespace grouped together with a subdomain in the name of the namespace
+- all the services grouped together in another subdomain called svc
+- all the services and pods are grouped together, into a route domain for the cluster, which is set to cluster.local by default.
+- records for pod are not created by default.
+
+### ingress
+- for ingress to work must deploy an ingress controller
+- ingress resource comes under the namespace scoped
+- multi-tenacy is not supported (different paths manages by different teams)
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-example
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx-example
+  rules:
+  - http:
+      paths:
+      - path: /testpath
+        pathType: Prefix
+        backend:
+          service:
+            name: test
+            port:
+              number: 80
+```
+
+### gateway api
+- like ingress must deploy a controller
+- infra team configure the `gateway class`
+  - defines what is the underlying network would be (nginx, traefik, etc.)
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: example-class
+spec:
+  controllerName: example.com/gateway-controller
+```
+
+- cluster team configure the `gateway`
+  - which are instances of the `gateway class`
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: example-gateway
+spec:
+  gatewayClassName: example-class
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80
+```
+
+- app team configure `http route`
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metada:
+  name: example-httproute
+spec:
+  parentRefs:
+  - name: example-gateway
+    namespace: example-namespace
+  hostname:
+  - "www.example.com"
+  rules:
+  - matches:
+    - path:
+        type: Prefix
+        value: /login
+    backendRefs:
+    - name: example-svc
+      port: 8080
+```
+
+- unlike `ingress` you can use other routes like `tcp route`, `grpc route`
