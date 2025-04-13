@@ -3,6 +3,74 @@
 ## tips
 - executing a command inside pod `kubectl exec webapp -- cat /log/app.log`
 
+## installing
+### installing kubeadm, kubelet, kubectl
+- follow this [link](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/) for installation
+- for installing specific version on the ubuntu after adding kubernetes repository
+
+```bash
+apt-get update
+apt-cache madison kubeadm # for to see kubeadm versions
+apt-get install kubelet=<version> kubeadm=<version> kubectl=<version>
+```
+
+- add ipv4 ip forwarding with `sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf`
+- add ipv6 ip forwarding with `sed -i 's/#net.ipv6.conf.all.forwarding=1/net.ipv6.conf.all.forwarding=1/' /etc/sysctl.conf`
+- to enable ip forwarding without restart, run `sysctl -p /etc/sysctl.conf`
+
+### installing container runtime
+- select one of the runtimes from the [link](https://kubernetes.io/docs/setup/production-environment/container-runtimes) and follow the installation
+#### containerd
+- to install containerd on ubuntu, run `apt install -y containerd`
+- if `/etc/containerd` doesn't exit, run `mkdir -p /etc/containerd`
+- to create default config, run `containerd config default > /etc/containerd/config.toml`
+
+### control groups (cgroup)
+- when you want to limit resource on containers **cgroup** is used under the hood
+- there are two driver to choose, **cgroupfs** and **systemd**
+- if init system is **systemd** on the host, you need use **systemd**.
+- to check the init system, run `ps -p 1`
+- if the **kubelet** version v1.22 or above, default configuration is **systemd**
+- container runtime configuration for **cgroup** is mandatory
+- enable **systemd** in containerd configuration with `sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml`
+  - then restart **containerd** with `systemctl restart containerd`
+
+### initializing control-plane
+- to use control-plane with **high availability** pass `--control-plane-endpoint <virtual_ip>` with **kubeadm**
+- to assign ip pools for pods pass `--pod-network-cidr "10.0.0.0/16"` with **kubeadm**
+- to choose which network endpoint pass `--apiserver-advertise-address <ip_address>` with **kubeadm**
+- to upload certificates as secrest pass `--upload-certs` with **kubeadm**
+`kubeadm init --apiserver-advertise-address=192.168.1.77 --pod-network-cidr "10.244.0.0/16" --upload-certs`
+- after initializing copy the generated kubectl config to `%HOME/.kube/config` for using **kubectl**
+- `kubeadm token` is when you forgot your token
+
+### installing network addon (cni)
+- follow this [link](https://kubernetes.io/docs/concepts/cluster-administration/addons/#networking-and-network-policy) for selecting and installing cni
+- **flannel** needs **br_netfilter** module, enable it with `modprobe br_netfilter`
+
+## cluster upgrade
+- none of the components' version can higher than `kube-apiserver`
+- controller-manager and `kube-scheduler` can be **one** version lower than `kube-apiserver`
+- `kubelet` and `kube-proxy` can be **two** version lower than `kube-apiserver`
+- `kubectl` can be **one** higher or **one** lower than `kube-apiserver`
+- kubernetes support only support recent **three** minor version
+- recommended path is update minor versions one at a time without skipping
+
+### kubeadm - upgrade
+  - for minor version upgrades edit package manager's kubernetes version
+    - for example: for ubuntu edit `/etc/apt/sources.list.d/kubernetes.list` and replace desired version
+    - before upgrading the kubeadm list versions and select the patch version for installation for `kubeadm` and `kubelet`
+  - only `drain` the node will be upgraded then upgrade `kubelet` and `kubeadm` with the package manager
+  - `emre@home ~ → kubeadm upgrade plan <version>`
+  - upgrade the `kubeadm` command first with package manager
+  - `emre@home ~ → kubeadm upgrade apply <version>`
+  - upgrade the `kubelet` command first with package manager and restart the `kubelet` service
+  - update the node configuration for the new `kubelet` version
+    - `emre@home ~ →  kubeadm upgrade node #config --kubelet-version <version>`
+  - restart the `kubelet` service
+  - `uncordon` the node when the upgrade is completed
+  - repeat for all the nodes
+
 ## metada
 - custom data for the definition file
 
@@ -168,28 +236,6 @@ spec:
   - `emre@home ~ → kubectl cordon node-2`
 - if there is app on node that isn't part any replicaset the node cannot be drained
 
-## cluster upgrade
-- none of the components' version can higher than `kube-apiserver`
-- controller-manager and `kube-scheduler` can be **one** version lower than `kube-apiserver`
-- `kubelet` and `kube-proxy` can be **two** version lower than `kube-apiserver`
-- `kubectl` can be **one** higher or **one** lower than `kube-apiserver`
-- kubernetes support only support recent **three** minor version
-- recommended path is update minor versions one at a time without skipping
-
-### kubeadm - upgrade
-  - for minor version upgrades edit package manager's kubernetes version
-    - for example: for ubuntu edit `/etc/apt/sources.list.d/kubernetes.list` and replace desired version
-    - before upgrading the kubeadm list versions and select the patch version for installation for `kubeadm` and `kubelet`
-  - only `drain` the node will be upgraded then upgrade `kubelet` and `kubeadm` with the package manager
-  - `emre@home ~ → kubeadm upgrade plan <version>`
-  - upgrade the `kubeadm` command first with package manager
-  - `emre@home ~ → kubeadm upgrade apply <version>`
-  - upgrade the `kubelet` command first with package manager and restart the `kubelet` service
-  - update the node configuration for the new `kubelet` version
-    - `emre@home ~ →  kubeadm upgrade node #config --kubelet-version <version>`
-  - restart the `kubelet` service
-  - `uncordon` the node when the upgrade is completed
-  - repeat for all the nodes
 
 ## etcd
 - `etcdctl` is the client for interacting with **etcd**
